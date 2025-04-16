@@ -5,8 +5,8 @@ import time
 
 st.title("PDF to Markdown with Mathpix")
 st.write("""
-이 앱은 교사의 수업자료를 PDF로 업로드하면,
-해당 PDF를 **Markdown** 형식의 txt파일로 변환하여 다운로드할 수 있게 해줍니다.
+이 앱은 **Mathpix API**를 통해 PDF를 업로드하면,
+해당 PDF를 **Markdown** 형식의 텍스트로 변환하여 다운로드할 수 있게 해줍니다.
 """)
 
 # 파일 업로더
@@ -29,10 +29,14 @@ def convert_pdf_to_markdown(pdf_bytes: bytes, app_id: str, app_key: str) -> str:
         "Content-Type": "application/json"
     }
 
-    # API 요청 바디
+    # API 요청 바디: files 배열 안에 { "file": base64-encoded-pdf, "name": "..." } 형태
     data = {
-        "urls": [],        # URL 대신 직접 업로드할 때는 "files" + base64 사용
-        "files": [b64_pdf],
+        "files": [
+            {
+                "file": b64_pdf,
+                "name": "uploaded.pdf"
+            }
+        ],
         "formats": ["markdown"],  # html, text 등 가능
         "ocr": ["math"],          # 수식 OCR
         "metadata": False
@@ -44,10 +48,14 @@ def convert_pdf_to_markdown(pdf_bytes: bytes, app_id: str, app_key: str) -> str:
         st.error(f"Mathpix API 에러: {response.text}")
         return None
 
+    # (디버깅용) 전체 응답을 확인하려면 아래처럼 찍어볼 수도 있음
+    # st.write(response.json())
+
     # API가 반환한 pdf_id 추출
     pdf_id = response.json().get("pdf_id", None)
     if not pdf_id:
-        st.error("pdf_id를 가져오지 못했습니다.")
+        st.error("'pdf_id'를 가져오지 못했습니다. 응답 내용:")
+        st.error(response.json())
         return None
 
     # 2) 변환 상태를 주기적으로 확인 (폴링)
@@ -87,7 +95,7 @@ def convert_pdf_to_markdown(pdf_bytes: bytes, app_id: str, app_key: str) -> str:
 # 메인 로직
 if uploaded_file is not None:
     # Secrets에서 API 정보 가져오기
-    # => Streamlit Cloud의 'Project settings -> Secrets'에 아래처럼 저장했다고 가정:
+    # => Streamlit Cloud 'Project settings -> Secrets' 예시:
     # [mathpix]
     # app_id = "YOUR_APP_ID"
     # app_key = "YOUR_APP_KEY"
@@ -111,4 +119,3 @@ if uploaded_file is not None:
             file_name="converted_markdown.txt",
             mime="text/plain"
         )
-
