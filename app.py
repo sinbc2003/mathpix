@@ -5,8 +5,8 @@ import time
 
 st.title("PDF to Markdown with Mathpix")
 st.write("""
-이 앱은 **Mathpix API**를 통해 PDF를 업로드하면,
-해당 PDF를 **Markdown** 형식의 텍스트로 변환하여 다운로드할 수 있게 해줍니다.
+이 앱은 교사의 수업자료를 PDF로 업로드하면,
+해당 PDF를 **Markdown** 형식의 txt파일로 변환하여 다운로드할 수 있게 해줍니다.
 """)
 
 # 파일 업로더
